@@ -1,0 +1,43 @@
+# check python version
+py --version
+# run scrip
+python3 name.py
+
+# install a plugin/package/module
+python3 -m pip install <NAME>
+python3 -m pip install virtualenv
+
+# create a virtual env
+python3 -m venv venv
+
+# activate virtual eng
+mac:
+source venv/bin/activate
+win:
+venv\Scripts\activate
+
+python3 -m pip install flask flask_cors pymongo "pymongo[srv]" certifi
+
+
+## GIT
+
+# init repo
+git init
+
+# setup the remove
+git remote add origin <URL>
+
+# create commits
+git add .
+git commit -m "SOMETHING"
+
+
+# push [first time]
+git push -u origin main     <- or master
+
+
+# push [nth times]
+git push
+
+
+git commit -m "100"
