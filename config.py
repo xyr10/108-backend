@@ -6,3 +6,5 @@ con_str = "mongodb+srv://xyr10:testPassword1234@cluster0.cx0a1zz.mongodb.net/?re
 
 client = pymongo.MongoClient(con_str, tlsCAFile=certifi.where())
 db = client.get_database('mymerch')
+
+# the "db" points to our database in the Mongo server

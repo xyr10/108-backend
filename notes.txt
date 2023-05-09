@@ -41,3 +41,8 @@ git push
 
 
 git commit -m "100"
+
+## Module 110 notes
+# this is to run the Flask server #
+
+flask --app  server.py --debug run
