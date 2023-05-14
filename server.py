@@ -2,6 +2,7 @@ from flask import Flask, request, abort
 import json
 from config import db
 from flask_cors import CORS
+from bson import ObjectId
 
 app = Flask(__name__)
 CORS(app)  # disable CORS security rule
@@ -45,10 +46,21 @@ def get_catalog():
 @app.post("/api/catalog")
 def save_product():
     data = request.get_json()
+
+# apply validation
+# BR1: Title must exist and should have at least 6 char
+    if "title" not in data or len(data["title"]) < 6:
+        return abort(400, "Invalid Title")
+
+# BR2: There must be a price, and should be greater than zero
+    if "price" not in data or data["price"] <= 0:
+        return abort(400, "Invalid price")
+
+# BR3: there must be a category
+    if "category" not in data:
+        return abort(400, "Invalid category")
+
     db.products.insert_one(data)
-
-    print(data)  # to terminal
-
     return json.dumps(fix_id(data))  # will fail
 
 
@@ -180,22 +192,32 @@ def price_greater(value):
     return json.dumps(results)
 
 
+@app.delete("/api/products/<title>")
+def delete_product(title):
+    db.products.delete_one({"title": title})
+    return json.dumps({"status": "OK", "message": "Product Deleted"})
+
+
+@app.delete("/api/products/byid/<id>")
+def delete_by_id(id):
+    db_id = ObjectId(id)
+    db.products.delete_one({"_id": db_id})
+    return json.dumps({"status": "OK", "message": "Product Deleted"})
 #
 # ##### COUPON CODES ##########
 #
 
 # get /api/coupons -> retrieve all
 
+
 @app.get("/api/coupons")
 def get_coupons():
-    coupons = []
-    cursor = db.products.find({})
-    for prod in cursor:
-        cat = prod["coupons"]
-        if cat not in coupons:
-            coupons.append(cat)
+    results = []
+    cursor = db.coupons.find({})
+    for coupon in cursor:
+        results.append(fix_id(coupon))
 
-    return json.dumps(coupons)
+    return json.dumps(results)
 
 # post /api/coupons -> save new
 
@@ -203,6 +225,29 @@ def get_coupons():
 @app.post("/api/coupons")
 def save_coupons():
     data = request.get_json()
+
+# code must exist
+# should have at least 5 char
+    if not "code" in data or len(data["code"]) < 5:
+        return abort(400, "Invalid code")
+
+    # the code should be unique (?)
+    existing = db.coupons.find_one({"code": data["code"]})
+    if existing:
+        return abort(400, "Error: code already exists ont he list of couponse")
+
+# discount should exist
+# should be greater than 5 and less than 40%
+    if "discount" not in data:
+        return abort(400, "Invalid discount")
+
+    # discount its a number (int or a float)
+    if not isinstance(data["discount"], (int, float)):
+        return abort(400, "Invalid price, must be an int or a float")
+
+    if data["discount"] < 5 or data["discount"] > 40:
+        return abort(400, "Invalid discount, should be between 5 and 40")
+
     db.coupons.insert_one(data)
 
     return json.dumps(fix-id(data))
